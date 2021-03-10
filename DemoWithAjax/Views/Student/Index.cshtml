@@ -1,0 +1,144 @@
+﻿@model IEnumerable<DemoWithAjax.Models.Student>
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Danh sách học sinh</h2>
+<div class="row" style="margin-bottom:15px;">
+    <div class="col-md-12">
+        <a href="#" data-toggle="modal" data-target="#modalCreateUpdate" class="btn btn-primary">Thêm mới</a>
+    </div>
+</div>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>STT</th>
+            <th>Name</th>
+            <th>Age</th>
+            <th></th>
+        </tr>
+    </thead>
+    @if (Model != null && Model.Any())
+    {
+        var i = 1;
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@i</td>
+                    <td>@item.Name</td>
+                    <td>@item.Age</td>
+                    <td><a href="">Edit</a> | <a>Delete</a></td>
+                </tr>
+                i++;
+            }
+
+        </tbody>
+    }
+    else
+    {
+        <tbody>
+            <tr>
+                <td colspan="4">Không có bản ghi nào</td>
+            </tr>
+        </tbody>
+    }
+</table>
+<!-- Button trigger modal -->
+<!--<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+    Launch demo modal
+</button>-->
+<!-- Modal -->
+<div class="modal fade" id="modalCreateUpdate" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="exampleModalLabel">Cập nhật thông tin học sinh</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+
+                <div class="form-group">
+                    <label for="exampleInputName">Họ và tên</label>
+                    <input type="text" class="form-control" id="exampleInputName" placeholder="Nhập họ và tên">
+                    <span class="error text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputAge">Tuổi</label>
+                    <input type="text" class="form-control" id="exampleInputAge" placeholder="Nhập tuổi">
+                    <span class="error text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputClass">Lớp</label>
+                    <select class="form-control" id="exampleInputClass">
+                        <option value="">Chọn lớp</option>
+                        @for (var k = 6; k < 13; k++)
+                        {
+                            <option value="@k">@k</option>
+                        }
+                    </select>
+                    <span class="error text-danger"></span>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="btnLuu">Lưu Lại</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            $('#btnLuu').click(function () {
+                var name = $('#exampleInputName').val();
+                var age = $('#exampleInputAge').val();
+                var _class = $('#exampleInputClass').val();
+                var model = {
+                    Name: name,
+                    Age: age,
+                    Class: _class
+                };
+                if (Validate()) {
+                    $.ajax({
+                        url: '/student/Create',
+                        type: 'POST',
+                        data: model,
+                        success: function (res) {
+                            if (res.success) {
+                                window.location.reload();
+                            }
+                        }
+                    });
+                }
+
+            });
+
+            function Validate() {
+                var check = false;
+                var name = $('#exampleInputName').val();
+                if (name === '') {
+                    $('#exampleInputName').next().html('Bạn chưa nhập họ và tên');
+                    check = false;
+                } else {
+                    $('#exampleInputName').next().html('');
+                    check = true;
+                }
+
+                var age = $('#exampleInputAge').val();
+                if (age === '') {
+                    $('#exampleInputAge').next().html('Bạn chưa tuổi');
+                    check = false;
+                } else {
+                    $('#exampleInputAge').next().html('');
+                    check = true;
+                }
+                return check;
+            }
+        });
+    </script>
+}
