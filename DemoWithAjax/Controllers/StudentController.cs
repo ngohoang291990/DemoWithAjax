@@ -14,8 +14,14 @@ namespace DemoWithAjax.Controllers
         // GET: Student
         public ActionResult Index()
         {
+            //var results = _context.Students.ToList();
+            return View();
+        }
+
+        public ActionResult GetData()
+        {
             var results = _context.Students.ToList();
-            return View(results);
+            return Json(new {Data=results,TotalItems=results.Count},JsonRequestBehavior.AllowGet);
         }
 
         [HttpPost]

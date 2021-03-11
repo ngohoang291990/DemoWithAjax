@@ -1,4 +1,4 @@
-﻿@model IEnumerable<DemoWithAjax.Models.Student>
+﻿@*@model IEnumerable<DemoWithAjax.Models.Student>*@
 @{
     ViewBag.Title = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -19,31 +19,32 @@
             <th></th>
         </tr>
     </thead>
-    @if (Model != null && Model.Any())
-    {
-        var i = 1;
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>@i</td>
-                    <td>@item.Name</td>
-                    <td>@item.Age</td>
-                    <td><a href="">Edit</a> | <a>Delete</a></td>
-                </tr>
-                i++;
-            }
+    <tbody id="show_data"></tbody>
+    @*@if (Model != null && Model.Any())
+        {
+            var i = 1;
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@i</td>
+                        <td>@item.Name</td>
+                        <td>@item.Age</td>
+                        <td><a href="">Edit</a> | <a>Delete</a></td>
+                    </tr>
+                    i++;
+                }
 
-        </tbody>
-    }
-    else
-    {
-        <tbody>
-            <tr>
-                <td colspan="4">Không có bản ghi nào</td>
-            </tr>
-        </tbody>
-    }
+            </tbody>
+        }
+        else
+        {
+            <tbody>
+                <tr>
+                    <td colspan="4">Không có bản ghi nào</td>
+                </tr>
+            </tbody>
+        }*@
 </table>
 <!-- Button trigger modal -->
 <!--<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
@@ -94,6 +95,7 @@
 @section scripts{
     <script>
         $(document).ready(function () {
+            LoadData();
             $('#btnLuu').click(function () {
                 var name = $('#exampleInputName').val();
                 var age = $('#exampleInputAge').val();
@@ -110,13 +112,38 @@
                         data: model,
                         success: function (res) {
                             if (res.success) {
-                                window.location.reload();
+                                LoadData();
+                                ResetInput();
+                                $('#modalCreateUpdate').modal('hide');
                             }
                         }
                     });
                 }
 
             });
+
+            function LoadData() {
+                $.ajax({
+                    url: '/student/getdata',
+                    type: 'GET',
+                    success: function (res) {
+                        if (res.TotalItems > 0) {
+                            var items = res.Data;
+                            var html = "";
+                            for (let i = 0; i < res.TotalItems; i++) {
+                                html += "<tr>";
+                                html += "<td>"+(i+1)+"</td>";
+                                html += "<td>" + items[i].Name +"</td>";
+                                html += "<td>" + items[i].Age+"</td>";
+                                html += "<td><a href='#' class='btn btn-warning'>Sửa</a> | <a href='#' class='btn btn-danger'>Xóa</a></td>";
+                                html += "</tr>";
+                            }
+                            $('#show_data').html(html);
+                        }
+                    }
+                });
+            }
+
 
             function Validate() {
                 var check = false;
@@ -138,6 +165,12 @@
                     check = true;
                 }
                 return check;
+            }
+
+            function ResetInput() {
+                $('#exampleInputName').val('');
+                $('#exampleInputAge').val('');
+                $('#exampleInputClass').val();
             }
         });
     </script>
