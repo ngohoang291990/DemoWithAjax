@@ -19,9 +19,17 @@ namespace DemoWithAjax.Controllers
             return View();
         }
 
-        public ActionResult GetData()
+        public ActionResult GetData(string searchName)
         {
-            var results = _context.Students.ToList();
+            List<Student> results = null;
+            if (!string.IsNullOrEmpty(searchName))
+            {
+                results = _context.Students.Where(x => x.Name.ToLower().Contains(searchName.Trim().ToLower())).ToList();
+            }
+            else
+            {
+                results = _context.Students.ToList();
+            }
             return Json(new {Data=results,TotalItems=results.Count},JsonRequestBehavior.AllowGet);
         }
 

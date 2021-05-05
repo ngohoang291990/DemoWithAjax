@@ -11,9 +11,13 @@
     </div>
 </div>
 <div class="row">
-    <div class="input-group">
-        <label for="searchBox">Tim kiem</label>
-        <input type="search" id="searchBox" placeholder="Tim Kiem...">
+    <div class="col-md-12">
+        <div class="input-group">
+            <label for="searchBox">Tìm kiếm</label>
+            <input type="search" id="txtSearchBox" placeholder="Tim Kiem...">
+
+            <button type="button" class="btn btn-primary" style="margin-left:10px;" id="btbSearch">Tìm kiếm</button>
+        </div>
     </div>
 </div>
 <table class="table table-bordered myTable">
@@ -27,7 +31,7 @@
         </tr>
     </thead>
     <tbody id="show_data" class="items"></tbody>
-  
+
 </table>
 <!-- Button trigger modal -->
 <!--<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
@@ -76,11 +80,18 @@
         </div>
     </div>
 </div>
+<input type="hidden" id="searchBox" placeholder="Tim Kiem...">
 @section scripts{
     <script>
         $(document).ready(function () {
-            LoadData();
-           
+            LoadData("");
+
+            $('body').on('click', '#btbSearch', function () {
+                var txtSearch = $('#txtSearchBox').val();
+                $('#show_data').html('');
+                LoadData(txtSearch);
+            });
+
             $('#btnLuu').click(function () {
                 var name = $('#exampleInputName').val();
                 var age = $('#exampleInputAge').val();
@@ -124,10 +135,11 @@
             });
 
         });
-        function LoadData() {
+        function LoadData(_searchName) {
             $.ajax({
                 url: '/student/getdata',
                 type: 'GET',
+                data: { searchName: _searchName},
                 success: function (res) {
                     if (res.TotalItems > 0) {
                         var items = res.Data;
@@ -142,17 +154,17 @@
                             html += "</tr>";
                         }
                         $('#show_data').html(html);
-                        let options = {
-                            numberPerPage: 7, //So ban ghi tren mot trang
-                            goBar: true, //Barra donde puedes digitar el numero de la pagina al que quiere ir
-                            pageCounter: true, //Contador de paginas, en cual estas, de cuantas paginas
-                        };
+                        //let options = {
+                        //    numberPerPage: 7, //So ban ghi tren mot trang
+                        //    goBar: true, //Barra donde puedes digitar el numero de la pagina al que quiere ir
+                        //    pageCounter: true, //Contador de paginas, en cual estas, de cuantas paginas
+                        //};
 
-                        let filterOptions = {
-                            el: '#searchBox' //Caja de texto para filtrar, puede ser una clase o un ID
-                        };
+                        //let filterOptions = {
+                        //    el: '#searchBox' //Caja de texto para filtrar, puede ser una clase o un ID
+                        //};
 
-                        paginate.init('.myTable', options, filterOptions);
+                        //paginate.init('.myTable', options, filterOptions);
                     }
                 }
             });
@@ -180,7 +192,7 @@
                 url: '/Student/DeleteRecord',
                 type: 'POST',
                 data: { id: id }
-               
+
                 //success: function (rs) {
                 //    if (rs.Success) {
                 //        $('#trow_' + id).remove();
@@ -190,8 +202,8 @@
                 //}
             }).done(function (res) {
                 if (res.Success) {
-                        $('#trow_' + id).remove();
-                    } 
+                    $('#trow_' + id).remove();
+                }
             }).fail(function (err) {
                 console.log(err);
             });
