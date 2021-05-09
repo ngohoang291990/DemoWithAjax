@@ -13,10 +13,12 @@
 <div class="row">
     <div class="col-md-12">
         <div class="input-group">
-            <label for="searchBox">Tìm kiếm</label>
-            <input type="search" id="txtSearchBox" placeholder="Tim Kiem...">
+            <form id="frmSubmit">
+                <label for="searchBox">Tìm kiếm</label>
+                <input type="search" name="searchText" id="txtSearchBox" placeholder="Tim Kiem...">
 
-            <button type="button" class="btn btn-primary" style="margin-left:10px;" id="btbSearch">Tìm kiếm</button>
+                <button type="button" class="btn btn-primary" style="margin-left:10px;" id="btbSearch">Tìm kiếm</button>
+            </form>
         </div>
     </div>
 </div>
@@ -31,7 +33,12 @@
         </tr>
     </thead>
     <tbody id="show_data" class="items"></tbody>
-
+    <tfoot>
+        <tr>
+            <td colspan="5" id="pagination">
+            </td>
+        </tr>
+    </tfoot>
 </table>
 <!-- Button trigger modal -->
 <!--<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
@@ -135,16 +142,17 @@
             });
 
         });
-        function LoadData(_searchName) {
+        function LoadData(_searchName, page) {
             $.ajax({
                 url: '/student/getdata',
                 type: 'GET',
-                data: { searchName: _searchName},
+                data: { searchName: _searchName, page: page },
                 success: function (res) {
+                    debugger;
                     if (res.TotalItems > 0) {
                         var items = res.Data;
                         var html = "";
-                        for (let i = 0; i < res.TotalItems; i++) {
+                        for (let i = 0; i < res.Data.length; i++) {
                             html += "<tr id='trow_" + items[i].Id + "'>";
                             html += "<td>" + (i + 1) + "</td>";
                             html += "<td>" + items[i].Name + "</td>";
@@ -154,6 +162,7 @@
                             html += "</tr>";
                         }
                         $('#show_data').html(html);
+                        Pagination(res.pageSize, res.PageCurrent);
                         //let options = {
                         //    numberPerPage: 7, //So ban ghi tren mot trang
                         //    goBar: true, //Barra donde puedes digitar el numero de la pagina al que quiere ir
@@ -187,6 +196,33 @@
             });
         }
 
+        function Pagination(pageSize, pageCurrent) {
+            if (pageSize > 0) {
+                str = `<ul class="pagination">`;
+                if (pageCurrent != 1) {
+                    str += `<li class="page-item"><a class="page-link" onclick="NextPage(${pageCurrent - 1});" href="javascript:void(0);">Previous</a></li>`;
+                }
+                for (let i = 1; i <= pageSize; i++) {
+                    if (i == pageCurrent) {
+                        str += `<li class="page-item active"><a class="page-link" href="#">${i}</a></li>`;
+                    }
+                    else {
+                        str += `<li class="page-item"><a class="page-link" onclick="NextPage(${i});" data-page="${i}" href="javascript:void(0);">${i}</a></li>`;
+                    }
+                }
+                if (pageCurrent != pageSize) {
+                    str += `<li class="page-item"><a class="page-link" onclick="NextPage(${pageCurrent + 1});" href="javascript:void(0);">Next</a></li>`;
+
+                }
+
+                str += "</ul";
+                $('#pagination').html(str);
+            }
+        }
+        function NextPage(page) {
+            var txtSearch = $('#txtSearchBox').val();
+            LoadData(txtSearch, page);
+        }
         function DeleteRecord(id) {
             $.ajax({
                 url: '/Student/DeleteRecord',

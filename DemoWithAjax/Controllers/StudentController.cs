@@ -19,7 +19,7 @@ namespace DemoWithAjax.Controllers
             return View();
         }
 
-        public ActionResult GetData(string searchName)
+        public ActionResult GetData(string searchName,int? page)
         {
             List<Student> results = null;
             if (!string.IsNullOrEmpty(searchName))
@@ -30,7 +30,22 @@ namespace DemoWithAjax.Controllers
             {
                 results = _context.Students.ToList();
             }
-            return Json(new {Data=results,TotalItems=results.Count},JsonRequestBehavior.AllowGet);
+            var pageSize = 2;
+            var pageIndex = page ?? 1;
+            var totalPage = results.Count;
+            float totalNumsize = (totalPage / (float)pageSize);
+            int numSize = (int)Math.Ceiling(totalNumsize);
+
+            int start = (int)(pageIndex - 1) * pageSize;
+            results= results.OrderByDescending(x => x.Id).Skip(start).Take(pageSize).ToList();
+
+            return Json(new
+            {
+                Data = results,
+                TotalItems = totalPage,
+                pageSize = numSize,
+                PageCurrent = pageIndex,
+            }, JsonRequestBehavior.AllowGet);
         }
 
         public ActionResult GetById(int id)
