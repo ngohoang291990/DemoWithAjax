@@ -19,7 +19,7 @@ namespace DemoWithAjax.Controllers
             return View();
         }
 
-        public ActionResult GetData(string searchName)
+        public ActionResult GetData(string searchName, int? page, int? pageSize)
         {
             List<Student> results = null;
             if (!string.IsNullOrEmpty(searchName))
@@ -30,13 +30,27 @@ namespace DemoWithAjax.Controllers
             {
                 results = _context.Students.ToList();
             }
-            return Json(new {Data=results,TotalItems=results.Count},JsonRequestBehavior.AllowGet);
+
+            var _pageSize = pageSize ?? 2;
+            var pageIndex = page ?? 1;
+            var totalPage = results.Count;
+            var numberPage = Math.Ceiling((float)totalPage / _pageSize);
+            var start = (pageIndex - 1) * _pageSize;
+            results = results.Skip(start).Take(_pageSize).ToList();
+            return Json(new
+            {
+                Data = results,
+                TotalItems = totalPage,
+                CurrentPage = pageIndex,
+                NumberPage = numberPage,
+                PageSize=_pageSize
+            }, JsonRequestBehavior.AllowGet);
         }
 
         public ActionResult GetById(int id)
         {
             var item = _context.Students.Find(id);
-            return Json(new { data = item },JsonRequestBehavior.AllowGet);
+            return Json(new { data = item }, JsonRequestBehavior.AllowGet);
         }
 
         [HttpPost]
@@ -66,7 +80,7 @@ namespace DemoWithAjax.Controllers
                 Console.WriteLine(ex);
                 return Json(new { success = false });
             }
-           
+
         }
 
         [HttpPost]
@@ -83,7 +97,7 @@ namespace DemoWithAjax.Controllers
         {
             var student = _context.Students.Find(id);
             _context.Students.Remove(student);
-            var rs=_context.SaveChanges();
+            var rs = _context.SaveChanges();
             if (rs > 0)
             {
                 return Json(new { Success = true });

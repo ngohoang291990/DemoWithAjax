@@ -31,7 +31,28 @@
         </tr>
     </thead>
     <tbody id="show_data" class="items"></tbody>
-
+    <tfoot>
+        <tr>
+            <td>
+                <select>
+                    <option value="5">5</option>
+                    <option value="15">15</option>
+                    <option value="25">25</option>
+                </select>
+            </td>
+            <td colspan="4" id="pagination">
+                @*<nav aria-label="Page navigation example">
+                        <ul class="pagination">
+                            <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                            <li class="page-item"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                        </ul>
+                    </nav>*@
+            </td>
+        </tr>
+    </tfoot>
 </table>
 <!-- Button trigger modal -->
 <!--<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
@@ -84,12 +105,12 @@
 @section scripts{
     <script>
         $(document).ready(function () {
-            LoadData("");
+            LoadData("", null, 2);
 
             $('body').on('click', '#btbSearch', function () {
                 var txtSearch = $('#txtSearchBox').val();
                 $('#show_data').html('');
-                LoadData(txtSearch);
+                LoadData(txtSearch, null, 2);
             });
 
             $('#btnLuu').click(function () {
@@ -135,16 +156,16 @@
             });
 
         });
-        function LoadData(_searchName) {
+        function LoadData(_searchName, page, pageSize) {
             $.ajax({
                 url: '/student/getdata',
                 type: 'GET',
-                data: { searchName: _searchName},
+                data: { searchName: _searchName, page: page, pageSize: pageSize },
                 success: function (res) {
                     if (res.TotalItems > 0) {
                         var items = res.Data;
                         var html = "";
-                        for (let i = 0; i < res.TotalItems; i++) {
+                        for (let i = 0; i < res.Data.length; i++) {
                             html += "<tr id='trow_" + items[i].Id + "'>";
                             html += "<td>" + (i + 1) + "</td>";
                             html += "<td>" + items[i].Name + "</td>";
@@ -154,6 +175,7 @@
                             html += "</tr>";
                         }
                         $('#show_data').html(html);
+                        Pagination(res.CurrentPage, res.NumberPage, res.PageSize);
                         //let options = {
                         //    numberPerPage: 7, //So ban ghi tren mot trang
                         //    goBar: true, //Barra donde puedes digitar el numero de la pagina al que quiere ir
@@ -170,6 +192,41 @@
             });
         }
 
+        function Pagination(currentPage, NumberPage, pageSize) {
+            if (NumberPage > 0) {
+                var str = `<nav aria-label="Page navigation example"> <ul class="pagination">`;
+                if (currentPage != 1) {
+                    str += `<li class="page-item"><a class="page-link" onclick="NextPage(${currentPage - 1},${pageSize})" href="javascript:void(0);">Previous</a></li>`;
+                }
+
+                for (let i = 1; i <= NumberPage; i++) {
+                    if (currentPage === i) {
+                        str += ` <li class="page-item active"><a class="page-link" href="javascript:void(0);">${i}</a></li>`;
+                    }
+                    else {
+                        str += ` <li class="page-item"><a class="page-link" onclick="NextPage(${i},${pageSize})" href="javascript:void(0);">${i}</a></li>`;
+                    }
+                }
+                if (currentPage != NumberPage)
+                    str += ` <li class="page-item"><a class="page-link" onclick="NextPage(${currentPage + 1},${pageSize})" href="javascript:void(0);">Next</a></li>`;
+                str += "</ul></nav>";
+                $('#pagination').html(str);
+            }
+        }
+
+        function NextPage(page, pageSize) {
+            var txtSearch = $('#txtSearchBox').val();
+            LoadData(txtSearch, page, pageSize);
+        }
+        //<nav aria-label="Page navigation example">
+        //    <ul class="pagination">
+        //        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+        //        <li class="page-item"><a class="page-link" href="#">1</a></li>
+        //        <li class="page-item"><a class="page-link" href="#">2</a></li>
+        //        <li class="page-item"><a class="page-link" href="#">3</a></li>
+        //        <li class="page-item"><a class="page-link" href="#">Next</a></li>
+        //    </ul>
+        //</nav>
         function GetDataById(id) {
             $.ajax({
                 url: '/student/getbyid',
